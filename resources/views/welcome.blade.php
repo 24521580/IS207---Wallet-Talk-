@@ -34,7 +34,7 @@
                 <h1 class="mt-4 font-[Fraunces] text-4xl leading-tight sm:text-5xl">Quản lý chi tiêu cho người Việt.</h1>
                 <p class="mt-4 max-w-xl text-ink-soft">
                     Nhập những gì bạn đã chi, Ví Nói tự động tách và
-                    phân loại giao dịch cho bạn!
+                    phân loại các khoản thu/chi cho bạn!
                 </p>
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a href="{{ route('login') }}" class="btn btn-primary">+ Thêm bằng AI</a>
@@ -69,9 +69,9 @@
 
         <section class="mt-12 grid gap-4 sm:grid-cols-3">
             @foreach ([
-                ['Nhập bằng ngôn ngữ tự nhiên'],
-                ['AI tách thành giao dịch'],
-                ['Kiểm tra và lưu'],
+                ['Nhập bằng ngôn ngữ tự nhiên', 'Nói theo cách của bạn.'],
+                ['AI tách thành giao dịch', 'AI tự động phân loại và tách các khoản thu/chi.'],
+                ['Kiểm tra và lưu', 'Kiểm tra thông tin trước khi lưu vào Ví.'],
             ] as [$title, $description])
                 <article class="card p-5">
                     <h2 class="font-semibold">{{ $title }}</h2>
