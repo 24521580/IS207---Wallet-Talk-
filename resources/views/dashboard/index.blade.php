@@ -4,7 +4,7 @@
     <section class="overflow-hidden rounded-[1.7rem] bg-leaf px-6 py-8 text-white sm:px-10">
         <p class="text-sm text-white/70">Xin chào, {{ auth()->user()->name }}</p>
         <h1 class="mt-2 max-w-xl font-[Fraunces] text-3xl leading-tight sm:text-5xl">Quản lý chi tiêu cho người Việt.</h1>
-        <p class="mt-3 max-w-xl text-white/80">Nhập những gì bạn đã chi. Ví Nói sẽ tự động phân loại và ghi lại cho bạn.</p>
+        <p class="mt-3 max-w-xl text-white/80">Nhập những gì bạn đã chi, Ví Nói sẽ tự động phân loại và ghi lại cho bạn!</p>
         <a href="{{ route('transactions.create') }}" class="btn mt-6 bg-white text-leaf-deep">+ Thêm bằng AI</a>
     </section>
 
