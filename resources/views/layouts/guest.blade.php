@@ -15,10 +15,10 @@
         <section class="hidden flex-col justify-between bg-leaf px-10 py-12 text-white lg:flex">
             <div>
                 <p class="text-sm uppercase tracking-[0.2em] text-white/70">Ví Nói</p>
-                <h1 class="mt-6 font-[Fraunces] text-5xl leading-tight">Bạn nói,<br>Ví Nói ghi.</h1>
-                <p class="mt-4 max-w-md text-white/80">Nhập một câu tiếng Việt. AI tách thành nhiều khoản thu/chi. Bạn kiểm tra, rồi mới lưu.</p>
+                <h1 class="mt-6 font-[Fraunces] text-5xl leading-tight">Ví cho người Việt.</h1>
+                <p class="mt-4 max-w-md text-white/80">Hôm nay bạn tiêu những gì? Để Ví Nói giúp bạn!</p>
             </div>
-            <p class="text-sm text-white/70">Quản lý chi tiêu cho người Việt — không phải chatbot.</p>
+            <p class="text-sm text-white/70">Quản lý chi tiêu cho người Việt</p>
         </section>
         <section class="flex items-center px-5 py-10 sm:px-10">
             <div class="mx-auto w-full max-w-md">
