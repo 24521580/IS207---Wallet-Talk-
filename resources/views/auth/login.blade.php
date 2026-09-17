@@ -3,13 +3,12 @@
 @section('content')
     <p class="text-sm font-medium text-leaf">Ví Nói</p>
     <h1 class="mt-2 font-[Fraunces] text-3xl">Đăng nhập</h1>
-    <p class="mt-2 text-sm text-ink-soft">Tài khoản demo: demo@vinoi.com / Demo123@</p>
 
     <form method="POST" action="{{ route('login') }}" class="mt-8 grid gap-4">
         @csrf
         <label class="grid gap-1 text-sm">
             Email
-            <input class="field" type="email" name="email" value="{{ old('email', 'demo@vinoi.com') }}" required>
+            <input class="field" type="email" name="email" required>
         </label>
         <label class="grid gap-1 text-sm">
             Mật khẩu
