@@ -3,7 +3,7 @@
 @section('content')
     @if ($demoMode)
         <div class="mb-4 rounded-2xl border border-line bg-white px-4 py-3 text-sm">
-            Đang chạy <strong>Demo AI Mode</strong> — kết quả đến từ bộ phân tích mẫu, không phải API thật.
+            Đang chạy <strong>Demo AI Mode</strong>
         </div>
     @endif
 
@@ -15,7 +15,7 @@
             @csrf
             <label class="sr-only" for="ai-text">Nội dung chi tiêu</label>
             <textarea id="ai-text" name="text" rows="5" class="field min-h-36 text-base"
-                placeholder="Hôm nay ăn sáng 30k, đổ xăng 100k, chiều mua sách 150k"></textarea>
+                placeholder="Hôm nay ăn sáng hết 30k, đổ xăng 100, chiều mua áo giảm giá 150 ngàn"></textarea>
             <p id="ai-input-error" class="mt-2 hidden text-sm text-orange-800"></p>
             <div class="mt-4 flex flex-wrap gap-2">
                 @foreach ([
@@ -37,8 +37,8 @@
 
     <section id="ai-result" class="mt-6 hidden">
         <div class="mb-4 rounded-2xl border border-clay/40 bg-white px-4 py-3 text-sm text-ink-soft">
-            <strong class="text-ink">AI đề xuất – Vui lòng kiểm tra trước khi lưu.</strong>
-            Sửa trực tiếp trên từng ô, xóa khoản nhận diện sai, hoặc thêm khoản thủ công.
+            <strong class="text-ink">Vui lòng kiểm tra trước khi lưu.</strong>
+            Sửa trực tiếp trên từng ô, xóa khoản sai hoặc thêm khoản thủ công.
         </div>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h2 id="ai-result-title" class="font-[Fraunces] text-2xl"></h2>
@@ -51,7 +51,7 @@
             @csrf
             <div id="tx-list" class="grid gap-4"></div>
             <p id="tx-empty" class="hidden rounded-2xl border border-line bg-white px-4 py-8 text-center text-ink-soft">
-                Không còn khoản nào để lưu. Hãy thêm khoản thủ công hoặc phân tích lại câu khác.
+                Không còn khoản nào để lưu. Vui lòng thêm khoản thủ công hoặc nhập lại câu khác.
             </p>
             <button id="confirm-submit" class="btn btn-primary w-full sm:w-auto">Xác nhận & Lưu</button>
         </form>
