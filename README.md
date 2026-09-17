@@ -2,9 +2,7 @@
 
 Personal finance web app for Vietnamese users. You type one natural sentence, AI splits it into structured transactions, you review them, then save.
 
-**Bạn nói, Ví Nói ghi.**
-
-This is not a chatbot. AI is only an expense parser.
+**Bạn chi, Ví Nói ghi.**
 
 ## Product overview
 
