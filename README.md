@@ -2,8 +2,6 @@
 
 Personal finance web app for Vietnamese users. You type one natural sentence, AI splits it into structured transactions, you review them, then save.
 
-**Bạn chi, Ví Nói ghi.**
-
 ## Product overview
 
 Typical flow:
@@ -228,29 +226,5 @@ Run everything:
 php artisan test
 ```
 
-## Manual demo checklist (dùng khi bảo vệ đồ án)
 
-1. `php artisan serve` → mở http://localhost:8000
-2. Đăng nhập `demo@vinoi.com` / `Demo123@`
-3. Dashboard: 4 summary card + doughnut + line + 5 giao dịch gần đây
-4. Bấm **+ Thêm bằng AI**
-5. Nhập: `Hôm nay ăn sáng 30k, đổ xăng 100k, chiều mua sách 150k`
-6. Bấm **Phân tích bằng AI** → spinner “Ví Nói đang phân tích…”
-7. Kiểm tra preview 3 giao dịch, sửa 1 khoản (ví dụ 30.000 → 35.000)
-8. Bấm **Xác nhận & Lưu** → toast “Đã lưu 3 giao dịch.”
-9. Lịch sử: thấy 3 giao dịch mới, nguồn `AI`, thử search/filter
-10. Dashboard: tổng chi và biểu đồ đã thay đổi
-11. Báo cáo: đổi preset Tuần này / 3 tháng gần đây / Custom range
-12. Đăng nhập `admin@vinoi.com` / `Admin123@` → Admin danh mục, thử xóa danh mục đang được dùng (bị chặn)
-
-## Troubleshooting
-
-| Symptom | Fix |
-| --- | --- |
-| `Vite manifest not found` | Chạy `npm install && npm run build` (hoặc `npm run dev`) |
-| Trang trắng/500 khi render view | `php artisan view:clear && php artisan config:clear` |
-| `Access denied for user 'root'` | Kiểm tra `DB_USERNAME`/`DB_PASSWORD` trong `.env` và MySQL đã chạy |
-| AI trả về kết quả “Demo AI Mode” dù đã có key | Đặt `DEMO_AI_MODE=false` rồi `php artisan config:clear` |
-| `429 Too Many Requests` ở màn thêm bằng AI | Route AI bị giới hạn 15 request/phút mỗi user |
-| Muốn xoá dữ liệu demo | `php artisan migrate:fresh --seed` |
 
