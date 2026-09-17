@@ -39,7 +39,10 @@ class LiveAiClient
         try {
             $response = Http::timeout((int) config('ai.timeout'))
                 ->acceptJson()
-                ->post($endpoint.'?key='.urlencode((string) $apiKey), [
+                ->withHeaders([
+                    'x-goog-api-key' => (string) $apiKey,
+                ])
+                ->post($endpoint, [
                     'contents' => [[
                         'parts' => [['text' => $this->userPrompt($text, $categoryCatalog, $today)]],
                     ]],
