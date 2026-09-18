@@ -19,6 +19,7 @@ class LiveAiClient
 
         return match ($provider) {
             'openai' => $this->callOpenAi($text, $categoryCatalog, $today),
+            'groq' => $this->callGroq($text, $categoryCatalog, $today),
             default => $this->callGemini($text, $categoryCatalog, $today),
         };
     }
