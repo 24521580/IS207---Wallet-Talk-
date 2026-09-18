@@ -73,6 +73,54 @@ class LiveAiClient
     /**
      * @param  array<int, array{name: string, type: string}>  $categoryCatalog
      */
+    private function callGroq(string $text, array $categoryCatalog, string $today): array
+    {
+        $apiKey = config('ai.groq.api_key');
+    
+        if (! filled($apiKey)) {
+            throw AiParseException::missingKey();
+        }
+    
+        try {
+            $response = Http::timeout((int) config('ai.timeout'))
+                ->withToken((string) $apiKey)
+                ->acceptJson()
+                ->post((string) config('ai.groq.endpoint'), [
+                    'model' => config('ai.groq.model'),
+                    'temperature' => 0.1,
+                    'response_format' => ['type' => 'json_object'],
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $this->systemPrompt(),
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $this->userPrompt(
+                                $text,
+                                $categoryCatalog,
+                                $today
+                            ),
+                        ],
+                    ],
+                ]);
+        } catch (ConnectionException) {
+            throw AiParseException::timeout();
+        } catch (\Throwable) {
+            throw AiParseException::unavailable();
+        }
+    
+        if (! $response->successful()) {
+            throw AiParseException::unavailable();
+        }
+    
+        return $this->decodeJson(
+            (string) data_get(
+                $response->json(),
+                'choices.0.message.content'
+            )
+        );
+    }
     private function callOpenAi(string $text, array $categoryCatalog, string $today): array
     {
         $apiKey = config('ai.openai.api_key');
