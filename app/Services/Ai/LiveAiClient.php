@@ -44,7 +44,7 @@ class LiveAiClient
     {
         return match ($provider) {
             'openai' => (string) config('ai.openai.model', 'gpt-4o-mini'),
-            'groq' => (string) config('ai.groq.model', 'llama-3.3-70b-versatile'),
+            'groq' => (string) config('ai.groq.model', 'openai/gpt-oss-20b'),
             default => (string) config('ai.gemini.model', 'gemini-2.0-flash'),
         };
     }
