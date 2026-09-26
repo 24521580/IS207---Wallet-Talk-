@@ -145,3 +145,35 @@
         color: #7c2d12;
     }
 }
+
+/* ── Voice Input ──────────────────────────────────────────────────────────── */
+
+/* Idle state: giống btn-ghost nhưng thêm màu leaf nhẹ cho mic icon */
+.voice-btn-idle {
+    color: var(--color-leaf);
+    border-color: var(--color-mist);
+}
+
+.voice-btn-idle:hover:not(:disabled) {
+    background: var(--color-mist);
+    border-color: var(--color-leaf);
+}
+
+/* Listening state: viền leaf, nền xanh nhạt, pulse ring */
+.voice-btn-listening {
+    color: white;
+    background: var(--color-leaf);
+    border-color: var(--color-leaf);
+    box-shadow: 0 0 0 0 rgb(31 111 87 / 0.4);
+    animation: voice-pulse 1.4s ease-out infinite;
+}
+
+.voice-btn-listening:hover {
+    background: var(--color-leaf-deep);
+}
+
+@keyframes voice-pulse {
+    0%   { box-shadow: 0 0 0 0     rgb(31 111 87 / 0.40); }
+    60%  { box-shadow: 0 0 0 8px   rgb(31 111 87 / 0.05); }
+    100% { box-shadow: 0 0 0 10px  rgb(31 111 87 / 0); }
+}

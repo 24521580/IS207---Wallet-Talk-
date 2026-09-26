@@ -228,3 +228,239 @@ confirmForm?.addEventListener('submit', (event) => {
     confirmBtn.disabled = true;
     confirmBtn.textContent = 'Đang lưu…';
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VOICE INPUT MODULE
+// Voice chỉ là phương thức nhập liệu. Không thay đổi AI pipeline.
+// Không lưu audio. Không tự động gọi AI. Không tự động save.
+// ─────────────────────────────────────────────────────────────────────────────
+
+(function initVoiceInput() {
+    // ── 1. DOM refs ──────────────────────────────────────────────────────────
+    const voiceControls   = document.getElementById('voice-controls');
+    const voiceBtn        = document.getElementById('voice-btn');
+    const voiceBtnLabel   = document.getElementById('voice-btn-label');
+    const voiceIconMic    = document.getElementById('voice-icon-mic');
+    const voiceIconStop   = document.getElementById('voice-icon-stop');
+    const voiceStatus     = document.getElementById('voice-status');
+    const voiceError      = document.getElementById('voice-error');
+    const voiceInterimWrap = document.getElementById('voice-interim-wrap');
+    const voiceInterimText = document.getElementById('voice-interim-text');
+    // textarea và inputError đã được khai báo ở scope ngoài (ai-parse.js)
+    // nhưng do IIFE tách scope, truy cập lại qua DOM cho an toàn
+    const aiTextarea      = document.getElementById('ai-text');
+
+    // Nếu thiếu bất kỳ element nào → không mount để tránh lỗi
+    if (!voiceControls || !voiceBtn || !aiTextarea) return;
+
+    // ── 2. Feature detection ─────────────────────────────────────────────────
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        // Browser không hỗ trợ: hiện controls nhưng disable button + tooltip
+        voiceControls.classList.remove('hidden');
+        voiceControls.classList.add('flex');
+        voiceBtn.disabled = true;
+        voiceBtn.title = 'Trình duyệt của bạn chưa hỗ trợ nhập bằng giọng nói. Bạn vẫn có thể nhập bằng bàn phím.';
+        voiceBtnLabel.textContent = 'Nói (chưa hỗ trợ)';
+        voiceBtn.classList.add('opacity-40', 'cursor-not-allowed');
+        return;
+    }
+
+    // Browser hỗ trợ → hiện voice controls
+    voiceControls.classList.remove('hidden');
+    voiceControls.classList.add('flex');
+
+    // ── 3. State ─────────────────────────────────────────────────────────────
+    /** @type {'idle'|'listening'|'stopping'} */
+    let state = 'idle';
+
+    /** @type {SpeechRecognition|null} */
+    let recognition = null;
+
+    // ── 4. Helpers ───────────────────────────────────────────────────────────
+    function showVoiceError(msg) {
+        if (!voiceError) return;
+        voiceError.textContent = msg;
+        voiceError.classList.remove('hidden');
+    }
+
+    function clearVoiceError() {
+        if (!voiceError) return;
+        voiceError.textContent = '';
+        voiceError.classList.add('hidden');
+    }
+
+    function showVoiceStatus(msg) {
+        if (!voiceStatus) return;
+        if (msg) {
+            voiceStatus.textContent = msg;
+            voiceStatus.classList.remove('hidden');
+        } else {
+            voiceStatus.textContent = '';
+            voiceStatus.classList.add('hidden');
+        }
+    }
+
+    function showInterim(text) {
+        if (!voiceInterimWrap || !voiceInterimText) return;
+        if (text) {
+            voiceInterimText.textContent = text;
+            voiceInterimWrap.classList.remove('hidden');
+        } else {
+            voiceInterimText.textContent = '';
+            voiceInterimWrap.classList.add('hidden');
+        }
+    }
+
+    /** Commit final transcript vào textarea (append hoặc set) */
+    function commitTranscript(transcript) {
+        const trimmed = transcript.trim();
+        if (!trimmed) return;
+
+        const current = aiTextarea.value;
+        if (current.trim() === '') {
+            aiTextarea.value = trimmed;
+        } else {
+            // Append với khoảng trắng phù hợp
+            const needsSpace = !current.endsWith(' ') && !current.endsWith('\n');
+            aiTextarea.value = current + (needsSpace ? ' ' : '') + trimmed;
+        }
+
+        // Dispatch input event để bất kỳ listener nào trên textarea biết giá trị thay đổi
+        aiTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    // ── 5. UI state transitions ───────────────────────────────────────────────
+    function enterListening() {
+        state = 'listening';
+        voiceBtn.setAttribute('aria-pressed', 'true');
+        voiceBtn.classList.remove('voice-btn-idle');
+        voiceBtn.classList.add('voice-btn-listening');
+        voiceBtn.title = 'Đang nghe... Bấm để dừng';
+        voiceBtnLabel.textContent = 'Đang nghe...';
+        voiceIconMic.classList.add('hidden');
+        voiceIconStop.classList.remove('hidden');
+        showVoiceStatus('Đang nghe… hãy nói bằng tiếng Việt');
+        clearVoiceError();
+    }
+
+    function enterIdle() {
+        state = 'idle';
+        voiceBtn.setAttribute('aria-pressed', 'false');
+        voiceBtn.classList.remove('voice-btn-listening');
+        voiceBtn.classList.add('voice-btn-idle');
+        voiceBtn.title = 'Nói bằng giọng nói';
+        voiceBtnLabel.textContent = 'Nói';
+        voiceIconMic.classList.remove('hidden');
+        voiceIconStop.classList.add('hidden');
+        showVoiceStatus('');
+        showInterim('');
+    }
+
+    // ── 6. Recognition lifecycle ─────────────────────────────────────────────
+    function createRecognition() {
+        const r = new SpeechRecognition();
+        r.lang = 'vi-VN';
+        r.interimResults = true;
+        r.continuous = false;
+        r.maxAlternatives = 1;
+
+        // Tích lũy final transcript trong phiên này
+        // (continuous=false nên thường chỉ có 1 lần onresult cuối)
+        let sessionFinalTranscript = '';
+
+        r.onstart = function () {
+            enterListening();
+        };
+
+        r.onresult = function (event) {
+            let interimBuffer = '';
+            // Duyệt từ resultIndex để không xử lý lại kết quả cũ
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const result = event.results[i];
+                const text = result[0].transcript;
+                if (result.isFinal) {
+                    sessionFinalTranscript += (sessionFinalTranscript ? ' ' : '') + text.trim();
+                    interimBuffer = ''; // xóa interim khi có final
+                } else {
+                    interimBuffer = text;
+                }
+            }
+            // Chỉ cập nhật interim display, KHÔNG chạm vào textarea
+            showInterim(interimBuffer);
+        };
+
+        r.onend = function () {
+            // Commit final transcript (nếu có) vào textarea
+            if (sessionFinalTranscript.trim()) {
+                commitTranscript(sessionFinalTranscript);
+            }
+            showInterim('');
+            enterIdle();
+            recognition = null;
+        };
+
+        r.onerror = function (event) {
+            const errorMessages = {
+                'not-allowed':       'Bạn chưa cấp quyền microphone. Vui lòng cho phép microphone hoặc nhập bằng bàn phím.',
+                'permission-denied': 'Bạn chưa cấp quyền microphone. Vui lòng cho phép microphone hoặc nhập bằng bàn phím.',
+                'audio-capture':     'Không thể truy cập microphone. Vui lòng kiểm tra thiết bị hoặc nhập bằng bàn phím.',
+                'no-speech':         'Không nhận diện được giọng nói. Vui lòng thử lại.',
+                'network':           'Lỗi mạng khi nhận diện giọng nói. Vui lòng kiểm tra kết nối internet.',
+                'aborted':           '', // user tự stop → không hiện lỗi
+                'service-not-allowed': 'Trình duyệt không cho phép dùng giọng nói trên trang này (HTTP). Vui lòng dùng HTTPS.',
+            };
+
+            const msg = errorMessages[event.error] ?? 'Không nhận diện được giọng nói. Vui lòng thử lại.';
+            if (msg) showVoiceError(msg);
+
+            // onend sẽ được gọi sau onerror → enterIdle() tự chạy
+        };
+
+        return r;
+    }
+
+    function startListening() {
+        clearVoiceError();
+        recognition = createRecognition();
+        try {
+            recognition.start();
+        } catch (err) {
+            // Có thể throw nếu recognition đang chạy
+            showVoiceError('Không thể khởi động microphone. Vui lòng thử lại.');
+            enterIdle();
+            recognition = null;
+        }
+    }
+
+    function stopListening() {
+        if (recognition) {
+            state = 'stopping';
+            try {
+                recognition.stop();
+            } catch (_) {
+                // ignore — onend sẽ cleanup
+            }
+        }
+    }
+
+    // ── 7. Button click handler ───────────────────────────────────────────────
+    voiceBtn.addEventListener('click', () => {
+        if (state === 'idle') {
+            startListening();
+        } else if (state === 'listening') {
+            stopListening();
+        }
+        // state === 'stopping': bỏ qua click thêm
+    });
+
+    // ── 8. Cleanup khi rời trang ─────────────────────────────────────────────
+    window.addEventListener('pagehide', () => {
+        if (recognition && state === 'listening') {
+            try { recognition.abort(); } catch (_) {}
+            recognition = null;
+        }
+    });
+})();

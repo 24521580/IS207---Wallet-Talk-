@@ -34,8 +34,47 @@
         <form id="ai-form" class="mt-6">
             @csrf
             <label class="sr-only" for="ai-text">Nội dung chi tiêu</label>
-            <textarea id="ai-text" name="text" rows="5" class="field min-h-36 text-base"
-                placeholder="Hôm nay ăn sáng hết 30k, đổ xăng 100, chiều mua áo giảm giá 150 ngàn"></textarea>
+            <div class="relative">
+                <textarea id="ai-text" name="text" rows="5" class="field min-h-36 text-base"
+                    placeholder="Hôm nay ăn sáng hết 30k, đổ xăng 100, chiều mua áo giảm giá 150 ngàn"></textarea>
+
+                {{-- Voice interim display: chỉ hiển thị khi đang nghe, không ảnh hưởng textarea --}}
+                <div id="voice-interim-wrap" class="mt-2 hidden rounded-xl border border-leaf/30 bg-leaf/5 px-3 py-2 text-sm text-ink-soft italic">
+                    <span id="voice-interim-text"></span>
+                    <span class="animate-pulse">…</span>
+                </div>
+            </div>
+
+            {{-- Voice controls --}}
+            <div id="voice-controls" class="mt-3 hidden items-center gap-3">
+                <button
+                    type="button"
+                    id="voice-btn"
+                    class="btn btn-ghost voice-btn-idle min-h-[44px] gap-2 px-4 text-sm"
+                    title="Nói bằng giọng nói"
+                    aria-label="Nhập bằng giọng nói"
+                    aria-pressed="false"
+                >
+                    {{-- Microphone SVG icon --}}
+                    <svg id="voice-icon-mic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="h-[18px] w-[18px] shrink-0" aria-hidden="true">
+                        <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                        <line x1="8"  y1="22" x2="16" y2="22"/>
+                    </svg>
+                    {{-- Stop/wave icon — chỉ hiện khi đang nghe --}}
+                    <svg id="voice-icon-stop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="hidden h-[18px] w-[18px] shrink-0" aria-hidden="true">
+                        <rect x="6" y="6" width="12" height="12" rx="2"/>
+                    </svg>
+                    <span id="voice-btn-label">Nói</span>
+                </button>
+                <p id="voice-status" class="hidden text-sm text-ink-soft"></p>
+            </div>
+            <p id="voice-error" class="mt-2 hidden text-sm text-orange-800"></p>
             <p id="ai-input-error" class="mt-2 hidden text-sm text-orange-800"></p>
             <div class="mt-4 flex flex-wrap gap-2">
                 @foreach ([
