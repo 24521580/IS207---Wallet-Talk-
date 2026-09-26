@@ -7,7 +7,11 @@
         @csrf
         <label class="grid gap-1 text-sm">Họ tên<input class="field" name="name" value="{{ old('name') }}" required></label>
         <label class="grid gap-1 text-sm">Email<input class="field" type="email" name="email" value="{{ old('email') }}" required></label>
-        <label class="grid gap-1 text-sm">Mật khẩu<input class="field" type="password" name="password" required></label>
+        <label class="grid gap-1 text-sm">Mật khẩu<input class="field" type="password" name="password" required>
+            <span class="text-xs text-ink-soft leading-snug">
+                8–20 ký tự &middot; chữ hoa &middot; chữ thường &middot; số &middot; ký tự đặc biệt <span class="font-mono tracking-tight text-ink-soft/70">(!@#$…)</span>
+            </span>
+        </label>
         <label class="grid gap-1 text-sm">Xác nhận mật khẩu<input class="field" type="password" name="password_confirmation" required></label>
         @if ($errors->any())
             <div class="text-sm text-orange-800">{{ $errors->first() }}</div>
