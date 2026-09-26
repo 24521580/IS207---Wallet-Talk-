@@ -552,6 +552,7 @@ Pipeline bắt buộc: nhận diện slang → chuẩn hóa đơn vị → trả
 - xị / xì = 100.000 (1 xị = 100.000)
 - lít = 100.000 KHI dùng như tiền lóng; KHÔNG áp dụng nếu "lít" là đơn vị thể tích (vd: "mua 2 lít xăng")
 - củ = 1.000.000 (1 củ = 1.000.000; KHÔNG phải 100.000)
+- tỏi = 1.000.000.000 (1 tỏi = 1 tỷ đồng; KHI dùng trong ngữ cảnh tiền/giao dịch)
 - chai = 1.000.000 KHI dùng như tiền lóng; KHÔNG áp dụng nếu "chai" là vật thể (vd: "mua 3 chai nước hết 30k")
 - cành = 100.000 (1 cành = 100.000)
 
@@ -589,6 +590,7 @@ Ví dụ: "mua 2 cái bánh giá 20" → 2 là số lượng, 20 là tiền = 20
 - "mua điện thoại 8 triệu 5" → 8500000
 - "ăn hết 3 xị" → 300000
 - "mua 3 chai nước hết 30k" → 3 là số lượng, amount = 30000
+- "mua nhà 1 tỏi" → 1000000000; "mua đất 2 tỏi rưỡi" → 2500000000
 
 JSON trả về (chỉ JSON, không giải thích, không chain-of-thought):
 {"transactions":[{"type":"expense","amount":30000,"category":"Ăn uống","date":"YYYY-MM-DD","note":"..."}],"unresolved":[]}

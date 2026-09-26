@@ -11,9 +11,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="antialiased">
+<body class="antialiased dark:bg-paper">
     <div class="min-h-screen pb-24 lg:pb-10">
-        <header class="sticky top-0 z-40 border-b border-line/80 bg-cream/90 backdrop-blur">
+        <header class="sticky top-0 z-40 border-b border-line/80 bg-cream/90 backdrop-blur dark:bg-cream/95 dark:border-line">
             <div class="page-shell flex items-center justify-between gap-3 py-3">
                 <a href="{{ route('dashboard') }}" class="flex min-h-0 items-center gap-2 font-semibold">
                     <span class="grid h-9 w-9 place-items-center rounded-2xl bg-leaf text-white">V</span>
@@ -56,13 +56,38 @@
                             AI chưa cấu hình
                         </span>
                     @endif
+
+                    {{-- Dark mode toggle --}}
+                    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Chuyển chế độ hiển thị">
+                        {{-- Moon icon — hiện ở light mode --}}
+                        <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             class="h-[17px] w-[17px]" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        {{-- Sun icon — hiện ở dark mode --}}
+                        <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             class="hidden h-[17px] w-[17px]" aria-hidden="true">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1"  x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1"  y1="12" x2="3"  y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64"  y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
+
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="btn btn-ghost min-h-10 px-4 text-sm">Logout</button>
                     </form>
                 </nav>
 
-                <button type="button" id="nav-toggle" class="grid h-11 w-11 place-items-center rounded-full border border-line bg-white lg:hidden" aria-label="Mở menu">
+                <button type="button" id="nav-toggle" class="grid h-11 w-11 place-items-center rounded-full border border-line bg-white dark:bg-cream dark:text-ink lg:hidden" aria-label="Mở menu">
                     ☰
                 </button>
             </div>
@@ -83,6 +108,28 @@
                     @else
                         <p class="rounded-xl bg-orange-50 border border-orange-200 px-3 py-3 text-sm text-orange-800">AI chưa cấu hình API key</p>
                     @endif
+                    {{-- Dark mode toggle (mobile) --}}
+                    <button type="button" id="theme-toggle-mobile" class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-ink-soft hover:text-ink">
+                        <svg id="theme-icon-moon-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             class="h-4 w-4 shrink-0" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        <svg id="theme-icon-sun-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             class="hidden h-4 w-4 shrink-0" aria-hidden="true">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1"  x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1"  y1="12" x2="3"  y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64"  y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <span id="theme-toggle-mobile-label">Chuyển sang chế độ tối</span>
+                    </button>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="w-full rounded-xl px-3 py-3 text-left">Logout</button>
@@ -112,7 +159,7 @@
         </main>
     </div>
 
-    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-cream/95 backdrop-blur lg:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-cream/95 backdrop-blur dark:bg-cream/95 lg:hidden">
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('dashboard') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('dashboard') }}">Tổng quan</a>
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('transactions.create') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('transactions.create') }}">+ AI</a>
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('transactions.index') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('transactions.index') }}">Lịch sử</a>

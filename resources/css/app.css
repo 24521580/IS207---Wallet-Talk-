@@ -177,3 +177,104 @@
     60%  { box-shadow: 0 0 0 8px   rgb(31 111 87 / 0.05); }
     100% { box-shadow: 0 0 0 10px  rgb(31 111 87 / 0); }
 }
+
+/* ── Dark Mode ────────────────────────────────────────────────────────────── */
+
+/* Tailwind v4: khai báo variant `dark` kích hoạt khi html có class="dark" */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Override toàn bộ color tokens khi dark mode active */
+.dark {
+    --color-ink:       #e8f0ec;
+    --color-ink-soft:  #94aaa0;
+    --color-paper:     #0f1a15;
+    --color-cream:     #162019;
+    --color-leaf:      #3a9e7a;
+    --color-leaf-deep: #4dbb8f;
+    --color-mist:      #1e3028;
+    --color-clay:      #e8895a;
+    --color-line:      #253328;
+}
+
+/* Component classes dùng hardcode #fff / white — cần override riêng */
+.dark .card {
+    background: #162019;
+    border-color: var(--color-line);
+}
+
+.dark .btn-ghost {
+    background: #1e2d24;
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+.dark .btn-ghost:hover {
+    background: #253328;
+}
+
+.dark .chip {
+    background: #1e2d24;
+    border-color: var(--color-line);
+    color: var(--color-ink-soft);
+}
+
+.dark .field {
+    background: #1a2820;
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+.dark .field:focus {
+    border-color: var(--color-leaf);
+    box-shadow: 0 0 0 4px rgb(58 158 122 / 0.15);
+}
+
+.dark .field::placeholder {
+    color: #4a6358;
+}
+
+.dark .toast {
+    background: #1e2d24;
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+.dark .toast-success {
+    border-color: #253328;
+    color: var(--color-leaf-deep);
+}
+
+.dark .toast-error {
+    border-color: #4a2020;
+    color: #fca5a5;
+}
+
+/* amount colors trong dark mode */
+.dark .amount-out {
+    color: #fca5a5;
+}
+
+.dark .amount-in {
+    color: var(--color-leaf-deep);
+}
+
+/* ── Dark Mode Toggle Button ──────────────────────────────────────────────── */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background: transparent;
+    color: var(--color-ink-soft);
+    transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+    min-height: unset;        /* override base rule */
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    background: var(--color-mist);
+    color: var(--color-ink);
+}
