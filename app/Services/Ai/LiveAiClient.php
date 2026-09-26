@@ -165,6 +165,13 @@ class LiveAiClient
 
         foreach ($models as $model) {
             try {
+                Log::info('LiveAiClient: Calling Gemini API', [
+                    'model' => $model,
+                    'endpoint' => $endpointBase.'/'.$model.':generateContent',
+                    'text_length' => strlen($text),
+                    'category_count' => count($categoryCatalog),
+                ]);
+
                 $response = Http::timeout($timeout)
                     ->connectTimeout(10)
                     ->acceptJson()
@@ -183,6 +190,12 @@ class LiveAiClient
                             'responseMimeType' => 'application/json',
                         ],
                     ]);
+
+                Log::info('LiveAiClient: Gemini API response received', [
+                    'model' => $model,
+                    'status' => $response->status(),
+                    'has_body' => $response->body() !== '',
+                ]);
             } catch (ConnectionException $e) {
                 Log::error('LiveAiClient: Gemini request timed out.', ['error' => $this->redact($e->getMessage())]);
                 throw AiParseException::timeout('gemini');
@@ -202,10 +215,18 @@ class LiveAiClient
             $textPayload = data_get($response->json(), 'candidates.0.content.parts.0.text');
 
             if (! filled($textPayload)) {
-                Log::error('LiveAiClient: Gemini returned empty content part.');
+                Log::error('LiveAiClient: Gemini returned empty content part.', [
+                    'model' => $model,
+                    'response_json' => $response->json(),
+                ]);
                 $lastException = AiParseException::invalidJson('gemini', 'Empty text payload');
                 continue;
             }
+
+            Log::info('LiveAiClient: Gemini parse successful', [
+                'model' => $model,
+                'text_length' => strlen($textPayload),
+            ]);
 
             return $this->decodeJson((string) $textPayload);
         }
