@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use App\Services\Ai\LiveAiClient;
 use Illuminate\Console\Command;
 
