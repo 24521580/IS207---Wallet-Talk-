@@ -97,13 +97,16 @@ class LiveAiClient
             $ping = $this->pingProvider($provider);
 
             if ($ping['ok']) {
+                $isRateLimit = ($ping['error_type'] === 'rate_limit');
+
                 return [
                     'configured' => true,
                     'provider' => $provider,
                     'model' => $model,
-                    'connection' => 'ok',
+                    'connection' => $isRateLimit ? 'degraded' : 'ok',
                     'http_status' => $ping['status'],
-                    'message' => 'Kết nối thành công tới API '.$provider,
+                    'error_type' => $isRateLimit ? 'rate_limit' : null,
+                    'message' => $isRateLimit ? $ping['message'] : 'Kết nối thành công tới API '.$provider,
                 ];
             }
 
@@ -360,25 +363,34 @@ class LiveAiClient
         $errorType = match (true) {
             in_array($status, [401, 403], true) => 'authentication',
             $status === 429 => 'rate_limit',
-            $status === 404 => 'unavailable',
+            $status === 404 => 'not_found',
+            $status >= 500 => 'server_error',
             default => 'unavailable',
         };
 
         $detail = $this->redact((string) data_get($response->json(), 'error.message', 'HTTP '.$status));
-        Log::error('LiveAiClient: AI ping received error status.', [
+        $logLevel = in_array($errorType, ['rate_limit'], true) ? 'warning' : 'error';
+        Log::{$logLevel}('LiveAiClient: AI ping received error status.', [
             'provider' => $provider,
             'status' => $status,
+            'error_type' => $errorType,
             'error_detail' => $detail,
         ]);
 
+        // 429 = key hợp lệ nhưng hết quota/rate-limit → vẫn coi là "kết nối được"
+        // để không chặn hoàn toàn người dùng; thực tế parse sẽ thất bại riêng.
+        $okForPing = $errorType === 'rate_limit';
+
         $userMessage = match ($errorType) {
             'authentication' => 'Khóa API không hợp lệ hoặc chưa được kích hoạt quyền truy cập.',
-            'rate_limit' => 'Đã đạt giới hạn lượt gọi AI trong thời gian ngắn. Vui lòng đợi 1 phút và thử lại.',
+            'rate_limit' => 'API key hợp lệ nhưng đã hết quota hoặc đạt giới hạn lượt gọi. Vui lòng đợi rồi thử lại.',
+            'not_found' => 'Model AI không tìm thấy. Vui lòng kiểm tra cấu hình AI_PROVIDER / model.',
+            'server_error' => 'Máy chủ AI đang gặp sự cố (HTTP '.$status.'). Vui lòng thử lại sau.',
             default => 'Không thể kết nối với AI. Vui lòng thử lại hoặc nhập thủ công.',
         };
 
         return [
-            'ok' => false,
+            'ok' => $okForPing,
             'status' => $status,
             'error_type' => $errorType,
             'message' => $userMessage,
@@ -457,50 +469,17 @@ class LiveAiClient
     private function systemPrompt(): string
     {
         return <<<'PROMPT'
-Bạn là bộ máy phân tích chi tiêu chuyên nghiệp cho ứng dụng "Ví Nói".
-Nhiệm vụ: phân tích câu tiếng Việt thành cấu trúc JSON danh sách giao dịch.
+Bạn là bộ phân tích chi tiêu cho ứng dụng "Ví Nói". Phân tích câu tiếng Việt → JSON giao dịch.
 
-Quy tắc bắt buộc:
-1. Chỉ tạo giao dịch từ số tiền thực sự xuất hiện trong câu. Tuyệt đối không tự suy diễn hoặc bịa ra khoản mới.
-2. Quy đổi đơn vị tiền tệ sang số nguyên VND:
-   - "30k", "30 nghìn", "30 ngàn" = 30000
-   - "100k", "100 ngàn" = 100000
-   - "150k" = 150000
-   - "1 triệu", "1tr" = 1000000
-   - "2,5 triệu", "2.5 triệu", "2tr5" = 2500000
-3. Xử lý ngày:
-   - "hôm nay" = ngày hiện tại được cung cấp.
-   - "hôm qua" = ngày hôm qua được cung cấp.
-   - Mặc định là ngày hiện tại nếu không đề cập. Định dạng YYYY-MM-DD.
-4. Loại giao dịch (type): chỉ được là "income" (thu) hoặc "expense" (chi).
-5. Phân loại danh mục (category):
-   - Phải khớp chính xác một trong các tên danh mục hợp lệ được cung cấp.
-   - Nếu không chắc chắn, chọn "Khác" (cho chi) hoặc "Thu nhập khác" (cho thu), hoặc đưa đoạn văn vào "unresolved".
-6. Cấu trúc JSON trả về:
-{
-  "transactions": [
-    {
-      "type": "expense",
-      "amount": 30000,
-      "category": "Ăn uống",
-      "date": "YYYY-MM-DD",
-      "note": "Ăn sáng"
-    }
-  ],
-  "unresolved": []
-}
+Quy tắc:
+1. Chỉ tạo giao dịch từ số tiền có trong câu. Không bịa thêm khoản mới.
+2. Quy đổi VND: "30k"=30000, "1tr"=1000000, "2tr5"=2500000, "2.5 triệu"=2500000.
+3. Ngày: dùng hôm_nay/hôm_qua được cung cấp. Mặc định = hôm_nay. Định dạng YYYY-MM-DD.
+4. type: "income" (thu) hoặc "expense" (chi).
+5. category: phải khớp chính xác tên trong danh mục cung cấp. Không chắc → "Khác" hoặc "Thu nhập khác".
 
-Ví dụ:
-Input: "Hôm nay ăn sáng 30k, đổ xăng 100k, chiều mua sách 150k" (Hôm nay: 2026-09-26)
-Output:
-{
-  "transactions": [
-    {"type": "expense", "amount": 30000, "category": "Ăn uống", "date": "2026-09-26", "note": "Ăn sáng"},
-    {"type": "expense", "amount": 100000, "category": "Di chuyển", "date": "2026-09-26", "note": "Đổ xăng"},
-    {"type": "expense", "amount": 150000, "category": "Giáo dục", "date": "2026-09-26", "note": "Mua sách"}
-  ],
-  "unresolved": []
-}
+JSON trả về (chỉ JSON, không giải thích):
+{"transactions":[{"type":"expense","amount":30000,"category":"Ăn uống","date":"YYYY-MM-DD","note":"..."}],"unresolved":[]}
 PROMPT;
     }
 
@@ -514,7 +493,7 @@ PROMPT;
             ->map(fn (array $row) => $row['name'].' ('.$row['type'].')')
             ->implode(', ');
 
-        return "Hôm nay = {$today}. Hôm qua = {$yesterday}.\nDanh mục hợp lệ: {$catalog}\nCâu cần phân tích: {$text}";
+        return "Hôm nay: {$today}. Hôm qua: {$yesterday}.\nDanh mục hợp lệ: {$catalog}.\nCâu cần phân tích: {$text}";
     }
 
     private function decodeJson(string $raw): array
