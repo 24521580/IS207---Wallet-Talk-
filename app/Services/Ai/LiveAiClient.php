@@ -151,6 +151,60 @@ class LiveAiClient
     }
 
     /**
+     * Quick parse test with a minimal Vietnamese sentence. Safe for admin debug endpoints.
+     * Returns the raw result or error details without persisting anything.
+     *
+     * @return array{ok: bool, provider: string, model: string, result?: array<mixed>, error_type?: string, message?: string}
+     */
+    public function testParse(?string $provider = null): array
+    {
+        $provider = $provider ?: $this->resolveProvider();
+        $model = $this->getModel($provider);
+
+        if (! $this->hasKeyFor($provider)) {
+            return [
+                'ok' => false,
+                'provider' => $provider,
+                'model' => $model,
+                'error_type' => 'missing_key',
+                'message' => 'Chưa cấu hình API key.',
+            ];
+        }
+
+        try {
+            $result = $this->parse(
+                'Ăn sáng 30k',
+                [['name' => 'Ăn uống', 'type' => 'expense'], ['name' => 'Khác', 'type' => 'expense']],
+                now()->toDateString(),
+            );
+
+            return [
+                'ok' => true,
+                'provider' => $provider,
+                'model' => $model,
+                'result' => $result,
+            ];
+        } catch (\App\Exceptions\AiParseException $e) {
+            return [
+                'ok' => false,
+                'provider' => $provider,
+                'model' => $model,
+                'error_type' => $e->getErrorType(),
+                'message' => $e->getMessage(),
+                'developer_message' => $e->getDeveloperMessage(),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'provider' => $provider,
+                'model' => $model,
+                'error_type' => 'unknown',
+                'message' => $this->redact($e->getMessage()),
+            ];
+        }
+    }
+
+    /**
      * @param  array<int, array{name: string, type: string}>  $categoryCatalog
      */
     private function callGemini(string $text, array $categoryCatalog, string $today): array
@@ -404,10 +458,22 @@ class LiveAiClient
         }
 
         $status = $response->status();
-        $errDetail = $this->redact((string) data_get($response->json(), 'error.message', 'HTTP '.$status));
+        $responseJson = $response->json();
+
+        // Groq và nhiều provider dùng cả error.message lẫn error.error.message
+        $errDetail = $this->redact(
+            (string) (
+                data_get($responseJson, 'error.message')
+                ?? data_get($responseJson, 'error.error.message')
+                ?? data_get($responseJson, 'message')
+                ?? ('HTTP '.$status)
+            )
+        );
+
         Log::error('LiveAiClient: '.$provider.' API responded with error status.', [
             'status' => $status,
             'error_detail' => $errDetail,
+            'response_body' => $this->redact(substr($response->body(), 0, 500)),
         ]);
 
         if (in_array($status, [401, 403], true)) {

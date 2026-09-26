@@ -26,6 +26,21 @@ class AiTestController extends Controller
     }
 
     /**
+     * Test an actual parse request with a minimal sample sentence.
+     * Use this to confirm the AI key + model is working end-to-end.
+     * Never persists data.
+     */
+    public function testParse(Request $request): JsonResponse
+    {
+        $provider = $request->query('provider');
+        $result = $this->client->testParse($provider ? (string) $provider : null);
+
+        $status = $result['ok'] ? 200 : 502;
+
+        return response()->json($result, $status);
+    }
+
+    /**
      * Debug endpoint to show detailed AI configuration without exposing secrets.
      */
     public function debug(Request $request): JsonResponse
