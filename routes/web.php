@@ -55,4 +55,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/danh-muc/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/danh-muc/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     Route::get('/ai-test', [\App\Http\Controllers\Admin\AiTestController::class, 'test'])->name('ai.test');
+    Route::get('/ai-debug', [\App\Http\Controllers\Admin\AiTestController::class, 'debug'])->name('ai.debug');
 });

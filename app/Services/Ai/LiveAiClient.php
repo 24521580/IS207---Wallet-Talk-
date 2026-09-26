@@ -387,7 +387,11 @@ class LiveAiClient
         throw AiParseException::unavailable($provider, $errDetail);
     }
 
-    private function apiKey(string $provider): ?string
+    /**
+     * Public method to get API key (redacted) for debugging purposes.
+     * WARNING: Only use this for admin/debug endpoints, never expose to frontend.
+     */
+    public function apiKey(string $provider): ?string
     {
         $key = match ($provider) {
             'openai' => config('ai.openai.api_key'),
