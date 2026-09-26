@@ -59,8 +59,21 @@ class TransactionController extends Controller
     {
         $this->authorize('create', Transaction::class);
 
+        $text = $request->validated('text');
+        Log::info('TransactionController: Parse request received', [
+            'text_length' => strlen($text),
+            'text_preview' => substr($text, 0, 50),
+            'user_id' => $request->user()->id,
+        ]);
+
         try {
-            $result = $this->expenseParserService->parse($request->validated('text'));
+            $result = $this->expenseParserService->parse($text);
+
+            Log::info('TransactionController: Parse successful', [
+                'transaction_count' => count($result['transactions']),
+                'demo' => $result['demo'] ?? false,
+                'provider' => $result['provider'] ?? 'unknown',
+            ]);
         } catch (AiParseException $exception) {
             Log::warning('Transaction AI parse failed.', [
                 'error_type' => $exception->getErrorType(),
@@ -76,6 +89,7 @@ class TransactionController extends Controller
             Log::error('Transaction AI parse error: '.$e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
