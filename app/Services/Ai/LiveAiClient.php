@@ -557,13 +557,32 @@ Pipeline bắt buộc: nhận diện slang → chuẩn hóa đơn vị → trả
 - cành = 100.000 (1 cành = 100.000)
 
 ### Số đứng một mình trong ngữ cảnh giá tiền
-Khi câu đang nói về chi tiêu / giá cả và số nguyên nhỏ đứng một mình (không có đơn vị), hiểu là × 1.000:
-- "ăn sáng 10" → 10.000
-- "cà phê 25" → 25.000
-- "đổ xăng 100" → 100.000
-- "mua áo 250" → 250.000
-CHÚ Ý: chỉ áp dụng khi số đó rõ ràng là GIÁ TIỀN, không phải số lượng.
-Ví dụ: "mua 2 cái bánh giá 20" → 2 là số lượng, 20 là tiền = 20.000.
+Chỉ áp dụng khi số đó rõ ràng là GIÁ TIỀN, không phải số lượng.
+Phân biệt theo ĐỘ DÀI của số nguyên được nhập (không có đơn vị kèm theo):
+
+  • Số có 1–2 chữ số (1–99)   → × 1.000
+      1 → 1.000 | 5 → 5.000 | 10 → 10.000 | 30 → 30.000 | 99 → 99.000
+
+  • Số có 3 chữ số (100–999)  → × 1.000  [người Việt hay nói tắt "trăm" = trăm nghìn]
+      100 → 100.000 | 200 → 200.000 | 300 → 300.000 | 500 → 500.000
+
+  • Số có 4+ chữ số (≥ 1.000) → GIỮ NGUYÊN giá trị số
+      1.000 → 1.000 VND | 3.000 → 3.000 VND | 5.000 → 5.000 VND
+      10.000 → 10.000 VND | 30.000 → 30.000 VND | 100.000 → 100.000 VND
+      300.000 → 300.000 VND | 1.000.000 → 1.000.000 VND
+
+BẢNG ĐỐI CHIẾU BẮT BUỘC (ghi nhớ):
+  1 → 1000 | 10 → 10000 | 30 → 30000 | 99 → 99000
+  100 → 100000 | 300 → 300000 | 500 → 500000
+  1000 → 1000 | 3000 → 3000 | 5000 → 5000
+  10000 → 10000 | 30000 → 30000 | 100000 → 100000 | 300000 → 300000
+
+CẢNH BÁO: "ăn sáng 3000" = 3.000 VND (KHÔNG phải 3.000.000).
+           "ăn sáng 30" = 30.000 VND.
+           "ăn sáng 30000" = 30.000 VND (đã là giá trị đầy đủ, giữ nguyên).
+           "ăn sáng 300" = 300.000 VND (trăm nghìn).
+
+Phân biệt số lượng vs giá tiền: "mua 2 cái bánh giá 20" → 2 là số lượng, 20 là tiền = 20.000.
 
 ### Kết hợp rưỡi / nửa
 - rưỡi = + 0.5 đơn vị: "1 triệu rưỡi" = 1.500.000; "1 củ rưỡi" = 1.500.000; "1 lít rưỡi" = 150.000

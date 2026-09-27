@@ -68,6 +68,31 @@ class DemoAiParser
             'mua đồ 100k' => [
                 ['type' => 'expense', 'amount' => 100000, 'category' => 'Mua sắm', 'date' => $today, 'note' => 'Mua đồ'],
             ],
+            // Test cases cho quy tắc số tiền mới
+            'ăn sáng 1' => [
+                ['type' => 'expense', 'amount' => 1000, 'category' => 'Ăn uống', 'date' => $today, 'note' => 'Ăn sáng'],
+            ],
+            'ăn sáng 10' => [
+                ['type' => 'expense', 'amount' => 10000, 'category' => 'Ăn uống', 'date' => $today, 'note' => 'Ăn sáng'],
+            ],
+            'ăn sáng 100' => [
+                ['type' => 'expense', 'amount' => 100000, 'category' => 'Ăn uống', 'date' => $today, 'note' => 'Ăn sáng'],
+            ],
+            'ăn sáng 1000' => [
+                ['type' => 'expense', 'amount' => 1000, 'category' => 'Ăn uống', 'date' => $today, 'note' => 'Ăn sáng'],
+            ],
+            'ăn sáng 3000' => [
+                ['type' => 'expense', 'amount' => 3000, 'category' => 'Ăn uống', 'date' => $today, 'note' => 'Ăn sáng'],
+            ],
+            'ăn sáng 30000' => [
+                ['type' => 'expense', 'amount' => 30000, 'category' => 'Ăn uống', 'date' => $today, 'note' => 'Ăn sáng'],
+            ],
+            'đổ xăng 100' => [
+                ['type' => 'expense', 'amount' => 100000, 'category' => 'Di chuyển', 'date' => $today, 'note' => 'Đổ xăng'],
+            ],
+            'đổ xăng 1000' => [
+                ['type' => 'expense', 'amount' => 1000, 'category' => 'Di chuyển', 'date' => $today, 'note' => 'Đổ xăng'],
+            ],
         ];
 
         $key = mb_strtolower($text);
@@ -148,10 +173,25 @@ class DemoAiParser
             return (int) preg_replace('/\D/', '', $match[0]);
         }
 
+        // Số nguyên không có đơn vị - áp dụng quy tắc tiếng Việt
         if (preg_match('/(\d+)\s*(vnd|đ|đồng)?/u', $normalized, $match)) {
             $value = (int) $match[1];
+            if ($value <= 0) {
+                return null;
+            }
 
-            return $value > 0 ? $value : null;
+            // Quy tắc tiếng Việt cho số không có đơn vị:
+            // 1-99 → × 1.000
+            // 100-999 → × 1.000 (trăm nghìn)
+            // 1000+ → giữ nguyên
+            if ($value >= 1 && $value <= 99) {
+                return $value * 1_000;
+            }
+            if ($value >= 100 && $value <= 999) {
+                return $value * 1_000;
+            }
+            // 1000+ giữ nguyên
+            return $value;
         }
 
         return null;

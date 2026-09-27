@@ -55,6 +55,55 @@ class DemoAiParserTest extends TestCase
         $this->assertContains($result['transactions'][0]['category'], ['Mua sắm', 'Khác']);
     }
 
+    // Test cases cho quy tắc số tiền tiếng Việt mới
+    public function test_vietnamese_money_rule_1_digit(): void
+    {
+        $result = $this->parse('ăn sáng 1');
+        $this->assertSame(1000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_2_digits(): void
+    {
+        $result = $this->parse('ăn sáng 10');
+        $this->assertSame(10000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_3_digits(): void
+    {
+        $result = $this->parse('ăn sáng 100');
+        $this->assertSame(100000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_4_digits_keep(): void
+    {
+        $result = $this->parse('ăn sáng 1000');
+        $this->assertSame(1000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_3000_keep(): void
+    {
+        $result = $this->parse('ăn sáng 3000');
+        $this->assertSame(3000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_30000_keep(): void
+    {
+        $result = $this->parse('ăn sáng 30000');
+        $this->assertSame(30000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_gas_100(): void
+    {
+        $result = $this->parse('đổ xăng 100');
+        $this->assertSame(100000, $result['transactions'][0]['amount']);
+    }
+
+    public function test_vietnamese_money_rule_gas_1000(): void
+    {
+        $result = $this->parse('đổ xăng 1000');
+        $this->assertSame(1000, $result['transactions'][0]['amount']);
+    }
+
     /**
      * @return array{transactions: array<int, array<string, mixed>>, unresolved: array<int, mixed>}
      */
