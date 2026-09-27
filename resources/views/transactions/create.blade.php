@@ -105,6 +105,8 @@
         </div>
         <p id="ai-status" class="mt-2 hidden text-sm text-ink-soft"></p>
         <p id="ai-unresolved" class="mt-2 hidden text-sm text-orange-800"></p>
+        {{-- Budget warnings: hiển thị khi có category vượt hạn mức --}}
+        <div id="budget-warnings" class="mt-3 hidden grid gap-2"></div>
         <div id="ai-summary" class="mt-3 hidden flex-wrap gap-2 text-sm"></div>
         <form method="POST" action="{{ route('transactions.confirm') }}" id="confirm-form" class="mt-4 grid gap-4">
             @csrf
@@ -121,6 +123,9 @@
             <div class="mb-3 flex items-center justify-between gap-3">
                 <p class="text-sm font-medium text-ink-soft js-index"></p>
                 <span class="chip js-source-badge text-xs"></span>
+            </div>
+            {{-- Budget warning: hidden by default, JS sẽ show nếu category này vượt hạn mức --}}
+            <div class="js-budget-warning mb-3 hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800/40 dark:bg-red-900/20 dark:text-red-300">
             </div>
             <div class="grid gap-3 md:grid-cols-5">
                 <label class="grid gap-1 text-sm md:col-span-2">Nội dung

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Budget;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Policies\BudgetPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\TransactionPolicy;
 use Illuminate\Pagination\Paginator;
@@ -23,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useTailwind();
         Gate::policy(Transaction::class, TransactionPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Budget::class, BudgetPolicy::class);
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

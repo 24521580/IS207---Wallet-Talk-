@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\Ai\ExpenseParserService;
 use App\Services\Ai\LiveAiClient;
+use App\Services\BudgetService;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,7 @@ class TransactionController extends Controller
     public function __construct(
         private readonly TransactionService $transactionService,
         private readonly ExpenseParserService $expenseParserService,
+        private readonly BudgetService $budgetService,
     ) {}
 
     public function index(Request $request): View
@@ -98,12 +100,29 @@ class TransactionController extends Controller
             ], 500);
         }
 
+        // ── Budget check (backend là nguồn sự thật, không tin AI) ──────────────
+        // Chỉ kiểm tra những transactions có category_id (đã được validator map)
+        $budgetWarnings = [];
+        try {
+            $checkableItems = array_filter(
+                $result['transactions'],
+                fn (array $t) => isset($t['category_id']) && isset($t['amount']) && isset($t['transaction_date']),
+            );
+            if (! empty($checkableItems)) {
+                $budgetWarnings = $this->budgetService->checkBudgets($request->user(), array_values($checkableItems));
+            }
+        } catch (\Throwable $e) {
+            // Budget check failure không được phá vỡ AI parse — chỉ log và bỏ qua
+            Log::warning('Budget check failed silently.', ['error' => $e->getMessage()]);
+        }
+
         return response()->json([
             'ok' => true,
             'message' => count($result['transactions']) > 0
                 ? 'AI đã nhận diện '.count($result['transactions']).' giao dịch.'
                 : 'AI không nhận diện được giao dịch nào. Hãy thêm thủ công.',
             'data' => $result,
+            'budget_warnings' => $budgetWarnings,
         ]);
     }
 

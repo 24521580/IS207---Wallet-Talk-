@@ -49,7 +49,7 @@ function fillCategorySelect(select, type, selectedId) {
         .join('');
 }
 
-function addCard(data = {}) {
+function addCard(data = {}, budgetWarning = null) {
     const node = template.content.firstElementChild.cloneNode(true);
     const typeSelect = node.querySelector('.js-type');
     const categorySelect = node.querySelector('.js-category');
@@ -64,6 +64,21 @@ function addCard(data = {}) {
     date.value = data.date || new Date().toISOString().slice(0, 10);
     source.value = data.source || 'manual';
     fillCategorySelect(categorySelect, typeSelect.value, data.category_id);
+
+    // Budget warning per-card
+    const warningEl = node.querySelector('.js-budget-warning');
+    if (budgetWarning && budgetWarning.over_budget && warningEl) {
+        const fmt = (n) => new Intl.NumberFormat('vi-VN').format(n);
+        warningEl.innerHTML = `
+            <strong>⚠ Vượt hạn mức ${budgetWarning.category_name}!</strong>
+            <span class="ml-1">Hạn mức: ${fmt(budgetWarning.limit_amount)}đ &middot;
+            Đã chi: ${fmt(budgetWarning.current_spending)}đ &middot;
+            Giao dịch này: ${fmt(budgetWarning.added_amount)}đ &middot;
+            Dự kiến: ${fmt(budgetWarning.projected_spending)}đ
+            (vượt ${fmt(budgetWarning.over_amount)}đ)</span>
+        `;
+        warningEl.classList.remove('hidden');
+    }
 
     typeSelect.addEventListener('change', () => {
         fillCategorySelect(categorySelect, typeSelect.value);
@@ -188,9 +203,42 @@ form?.addEventListener('submit', async (event) => {
         }
 
         list.innerHTML = '';
-        payload.data.transactions.forEach((item) => addCard(item));
+        payload.data.transactions.forEach((item) => {
+            // Map warning theo category_id (key là string từ JSON)
+            const warn = payload.budget_warnings
+                ? (payload.budget_warnings[String(item.category_id)] || null)
+                : null;
+            addCard(item, warn);
+        });
         resultWrap.classList.remove('hidden');
         showStatus(payload.message);
+
+        // Budget warnings tổng hợp ở đầu section
+        const budgetWarningsEl = document.getElementById('budget-warnings');
+        if (budgetWarningsEl) {
+            const warnings = payload.budget_warnings || {};
+            const overItems = Object.values(warnings).filter((w) => w.over_budget);
+            if (overItems.length > 0) {
+                budgetWarningsEl.innerHTML = overItems.map((w) => {
+                    const fmt = (n) => new Intl.NumberFormat('vi-VN').format(n);
+                    return `<div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800/40 dark:bg-red-900/20 dark:text-red-300">
+                        <strong>⚠ Chú ý:</strong> Giao dịch này sẽ làm bạn vượt hạn mức <strong>${w.category_name}</strong> tháng này!
+                        <span class="ml-1 text-red-700 dark:text-red-400">
+                            Hạn mức: ${fmt(w.limit_amount)}đ &middot;
+                            Đã chi: ${fmt(w.current_spending)}đ &middot;
+                            Dự kiến: ${fmt(w.projected_spending)}đ &middot;
+                            Vượt: ${fmt(w.over_amount)}đ
+                        </span>
+                    </div>`;
+                }).join('');
+                budgetWarningsEl.classList.remove('hidden');
+                budgetWarningsEl.classList.add('grid');
+            } else {
+                budgetWarningsEl.classList.add('hidden');
+                budgetWarningsEl.classList.remove('grid');
+                budgetWarningsEl.innerHTML = '';
+            }
+        }
 
         if (payload.data.unresolved?.length) {
             unresolved.classList.remove('hidden');

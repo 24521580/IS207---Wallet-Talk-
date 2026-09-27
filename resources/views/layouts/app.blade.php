@@ -28,6 +28,7 @@
                         ['dashboard', 'Dashboard'],
                         ['transactions.create', 'Thêm giao dịch'],
                         ['transactions.index', 'Lịch sử'],
+                        ['budgets.index', 'Hạn mức'],
                         ['reports.index', 'Báo cáo'],
                         ['profile.show', 'Profile'],
                     ])
@@ -96,6 +97,7 @@
                     <a class="rounded-xl px-3 py-3" href="{{ route('dashboard') }}">Dashboard</a>
                     <a class="rounded-xl px-3 py-3" href="{{ route('transactions.create') }}">Thêm giao dịch</a>
                     <a class="rounded-xl px-3 py-3" href="{{ route('transactions.index') }}">Lịch sử</a>
+                    <a class="rounded-xl px-3 py-3" href="{{ route('budgets.index') }}">Hạn mức</a>
                     <a class="rounded-xl px-3 py-3" href="{{ route('reports.index') }}">Báo cáo</a>
                     <a class="rounded-xl px-3 py-3" href="{{ route('profile.show') }}">Profile</a>
                     @if (auth()->user()->isAdmin())
@@ -159,10 +161,11 @@
         </main>
     </div>
 
-    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-cream/95 backdrop-blur dark:bg-cream/95 lg:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-cream/95 backdrop-blur dark:bg-cream/95 lg:hidden">
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('dashboard') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('dashboard') }}">Tổng quan</a>
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('transactions.create') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('transactions.create') }}">+ AI</a>
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('transactions.index') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('transactions.index') }}">Lịch sử</a>
+        <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('budgets.index') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('budgets.index') }}">Hạn mức</a>
         <a class="grid place-items-center py-2 text-xs {{ request()->routeIs('reports.index') ? 'text-leaf-deep' : 'text-ink-soft' }}" href="{{ route('reports.index') }}">Báo cáo</a>
     </nav>
     @stack('scripts')

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -47,6 +48,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/ho-so', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/ho-so', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Hạn mức chi tiêu
+    Route::get('/han-muc', [BudgetController::class, 'index'])->name('budgets.index');
+    Route::post('/han-muc', [BudgetController::class, 'store'])->name('budgets.store');
+    Route::put('/han-muc/{budget}', [BudgetController::class, 'update'])->name('budgets.update');
+    Route::delete('/han-muc/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
